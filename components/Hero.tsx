@@ -1,5 +1,5 @@
 import React from 'react';
-import bannerImg from '../img/final4.png';
+import bannerImg from '../img/Final4.png';
 
 const Hero: React.FC = () => {
     return (
