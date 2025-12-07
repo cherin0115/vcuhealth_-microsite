@@ -7,16 +7,15 @@ import ScriptGenerator from './components/ScriptGenerator';
 import AppointmentModal from './components/AppointmentModal';
 import { Symptom } from './types';
 
-
 const App: React.FC = () => {
     const [symptoms, setSymptoms] = useState<Symptom[]>([
-        { id: 'itching', label: 'Persistent Itching', checked: false },
-        { id: 'bowel', label: 'Changes in Bowel Habits', checked: false },
-        { id: 'bleeding', label: 'Bleeding (Thought it was hemorrhoids?)', checked: false },
-        { id: 'hpv', label: 'History of HPV', checked: false },
-        { id: 'mucus', label: 'Unexplained discharge or mucus', checked: false },
-        { id: 'pain', label: 'Feeling of fullness or pain in the area', checked: false },
-        { id: 'Lumps ', label: 'Lumps or bumps(Not sure if it is a skin tag?)', checked: false },
+        { id: 'itching', label: 'Persistent Itching', checked: false, category: 'minor' },
+        { id: 'bowel', label: 'Changes in Bowel Habits', checked: false, category: 'minor' },
+        { id: 'bleeding', label: 'Bleeding (Thought it was hemorrhoids?)', checked: false, category: 'critical' },
+        { id: 'hpv', label: 'History of HPV', checked: false, category: 'minor' },
+        { id: 'mucus', label: 'Unexplained discharge or mucus', checked: false, category: 'critical' },
+        { id: 'pain', label: 'Feeling of fullness or pain in the area', checked: false, category: 'critical' },
+        { id: 'Lumps ', label: 'Lumps or bumps (Not sure if it is a skin tag?)', checked: false, category: 'critical' },
     ]);
     
     const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
@@ -37,7 +36,8 @@ const App: React.FC = () => {
                 
                 <Checklist 
                     symptoms={symptoms} 
-                    onToggle={handleToggleSymptom} 
+                    onToggle={handleToggleSymptom}
+                    onBookAppointment={() => setIsAppointmentModalOpen(true)}
                 />
                 
                 <InfoSection />

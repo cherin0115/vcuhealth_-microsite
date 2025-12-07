@@ -1,13 +1,45 @@
-import React from 'react';
+
+import React, { useState, useEffect, useMemo } from 'react';
 import { Symptom } from '../types';
 
 interface ChecklistProps {
     symptoms: Symptom[];
     onToggle: (id: string) => void;
+    onBookAppointment: () => void;
 }
 
-const Checklist: React.FC<ChecklistProps> = ({ symptoms, onToggle }) => {
-    const hasCheckedItems = symptoms.some(s => s.checked);
+const Checklist: React.FC<ChecklistProps> = ({ symptoms, onToggle, onBookAppointment }) => {
+    const [showResult, setShowResult] = useState(false);
+    
+    // Derived state
+    const checkedItems = useMemo(() => symptoms.filter(s => s.checked), [symptoms]);
+    const hasCheckedItems = checkedItems.length > 0;
+
+    // Determine status
+    const resultStatus = useMemo(() => {
+        if (!hasCheckedItems) return 'none';
+        const hasCritical = checkedItems.some(s => s.category === 'critical');
+        return hasCritical ? 'critical' : 'minor';
+    }, [checkedItems, hasCheckedItems]);
+
+    // Get a specific critical symptom name for the message
+    const criticalSymptomLabel = useMemo(() => {
+        const critical = checkedItems.find(s => s.category === 'critical');
+        return critical ? critical.label : 'a red flag symptom';
+    }, [checkedItems]);
+
+    // Reset result visibility if user unchecks everything
+    useEffect(() => {
+        if (!hasCheckedItems) {
+            setShowResult(false);
+        }
+    }, [hasCheckedItems]);
+
+    const activeSymptomsList = checkedItems
+        .map(s => `- ${s.label}`)
+        .join('%0D%0A'); // URL encoded new line
+
+    const emailBody = `Hello,%0D%0A%0D%0AI have been tracking my health and wanted to discuss the following symptoms at my next visit:%0D%0A%0D%0A${activeSymptomsList}%0D%0A%0D%0AThank you.`;
 
     return (
         <section className="mb-12 relative z-10">
@@ -20,9 +52,9 @@ const Checklist: React.FC<ChecklistProps> = ({ symptoms, onToggle }) => {
                 <div className="absolute inset-0 bg-gray-200 rounded-sm transform rotate-2 translate-x-2 translate-y-2 border border-gray-300"></div>
                 
                 {/* Main Paper */}
-                <div className="relative bg-[#FDFBF7] border border-gray-300 p-6 rounded-sm shadow-lg min-h-[320px]">
+                <div className="relative bg-[#FDFBF7] border border-gray-300 p-6 rounded-sm shadow-lg min-h-[320px] transition-all duration-500">
                     
-                    {/* Notebook Margin Line */}
+                    {/* Notebook Margin Lines */}
                     <div className="absolute top-0 bottom-0 left-8 w-px bg-red-300/50"></div>
                     <div className="absolute top-0 bottom-0 left-9 w-px bg-red-300/50"></div>
 
@@ -31,7 +63,7 @@ const Checklist: React.FC<ChecklistProps> = ({ symptoms, onToggle }) => {
                             Mark what feels familiar:
                         </p>
                         
-                        <div className="space-y-4">
+                        <div className="space-y-4 mb-8">
                             {symptoms.map((symptom) => (
                                 <label key={symptom.id} className="flex items-center cursor-pointer group/item select-none relative py-1">
                                     {/* Invisible real checkbox */}
@@ -39,7 +71,11 @@ const Checklist: React.FC<ChecklistProps> = ({ symptoms, onToggle }) => {
                                         type="checkbox" 
                                         className="peer sr-only" 
                                         checked={symptom.checked}
-                                        onChange={() => onToggle(symptom.id)}
+                                        onChange={() => {
+                                            onToggle(symptom.id);
+                                            // If adding items while result is shown, keep shown. 
+                                            // If unchecking all, useEffect handles reset.
+                                        }}
                                     />
                                     
                                     {/* Custom Checkbox (Round with Asterisk) */}
@@ -74,23 +110,65 @@ const Checklist: React.FC<ChecklistProps> = ({ symptoms, onToggle }) => {
                         </div>
                     </div>
 
-                    {/* Result Note (Sticky Note Style) */}
-                    <div className={`mt-8 mx-4 transform transition-all duration-700 cubic-bezier(0.34, 1.56, 0.64, 1) ${
-                        hasCheckedItems 
-                            ? 'translate-y-0 opacity-100 rotate-1 scale-100' 
-                            : 'translate-y-8 opacity-0 pointer-events-none scale-95'
-                    }`}>
-                        <div className="bg-yellow-100 p-4 shadow-md border border-yellow-200/50 relative">
-                             {/* Tape effect */}
-                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-16 h-8 bg-white/40 rotate-1"></div>
-                            
-                            <div className="flex flex-col items-center text-center">
-                                <p className="font-display text-xl uppercase text-ink mb-1">Don't Panic.</p>
-                                <p className="font-hand text-2xl text-ink/80 leading-none">
-                                    It's likely minor, but asking brings peace of mind.
+                    {/* INTERACTION AREA */}
+                    <div className="min-h-[120px] flex items-end justify-center">
+                        
+                        {/* 1. "See My Results" Button (Visible only when items checked & result hidden) */}
+                        {!showResult && (
+                            <div className={`w-full transform transition-all duration-500 ${hasCheckedItems ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
+                                <button 
+                                    onClick={() => setShowResult(true)}
+                                    className="w-full bg-ink text-white font-display text-xl uppercase py-3 border-2 border-transparent shadow-retro hover:shadow-retro-active hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-gray-800 transition-all rounded-sm flex items-center justify-center gap-2"
+                                >
+                                    <span>See My Results</span>
+                                    <span className="text-burnt-orange">▼</span>
+                                </button>
+                            </div>
+                        )}
+
+                        {/* 2. Result Cards (Visible only when showResult is true) */}
+                        
+                        {/* Critical Card */}
+                        <div className={`w-full transform transition-all duration-700 cubic-bezier(0.34, 1.56, 0.64, 1) ${
+                            showResult && resultStatus === 'critical'
+                                ? 'translate-y-0 opacity-100 rotate-0 scale-100 relative' 
+                                : 'absolute translate-y-4 opacity-0 pointer-events-none scale-95'
+                        }`}>
+                            <div className="bg-burnt-orange p-6 shadow-md border-2 border-ink relative rounded-sm text-white">
+                                <h3 className="font-display text-2xl uppercase mb-2 border-b-2 border-white/20 pb-2">Recommendation</h3>
+                                <p className="font-body text-lg mb-6 leading-snug">
+                                    Because you noted <strong>{criticalSymptomLabel}</strong>, we recommend seeing a specialist soon to rule out anything serious.
                                 </p>
+                                <button 
+                                    onClick={onBookAppointment}
+                                    className="w-full bg-white text-burnt-orange font-display text-xl uppercase py-3 border-2 border-ink shadow-[4px_4px_0px_#1A1A1A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#1A1A1A] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center gap-2"
+                                >
+                                    <span>Book Appointment Now</span>
+                                    <span>→</span>
+                                </button>
                             </div>
                         </div>
+
+                        {/* Minor Card */}
+                        <div className={`w-full transform transition-all duration-700 cubic-bezier(0.34, 1.56, 0.64, 1) ${
+                            showResult && resultStatus === 'minor'
+                                ? 'translate-y-0 opacity-100 rotate-1 scale-100 relative' 
+                                : 'absolute translate-y-4 opacity-0 pointer-events-none scale-95'
+                        }`}>
+                            <div className="bg-olive p-6 shadow-md border-2 border-ink relative rounded-sm text-white">
+                                <h3 className="font-display text-2xl uppercase mb-2 border-b-2 border-white/20 pb-2">Good to Track</h3>
+                                <p className="font-body text-lg mb-6 leading-snug">
+                                    These symptoms are likely minor, but good to track. Ask your doctor about them at your next visit.
+                                </p>
+                                <a 
+                                    href={`mailto:?subject=My Symptom Checklist&body=${emailBody}`}
+                                    className="block text-center w-full bg-white text-olive font-display text-xl uppercase py-3 border-2 border-ink shadow-[4px_4px_0px_#1A1A1A] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#1A1A1A] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all"
+                                >
+                                    Email Me This List
+                                </a>
+                            </div>
+                        </div>
+
                     </div>
 
                 </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import bannerImg from '../img/Final4.png';
+import bannerImg from '../img/Final5.png';
 
 const Hero: React.FC = () => {
     return (
@@ -12,7 +12,7 @@ const Hero: React.FC = () => {
                         alt="Banner" 
                         className="w-full h-auto object-cover filter contrast-125 hover:scale-105 transition-transform duration-700"
                     />
-                    <div className="absolute inset-0 bg-burnt-orange mix-blend-multiply opacity-40"></div>
+                    <div className="absolute inset-0 bg-white mix-blend-multiply opacity-40"></div>
                 </div>
             </div>
             
