@@ -17,14 +17,13 @@ const Hero: React.FC = () => {
             </div>
             
             <h1 className="text-6xl md:text-7xl font-display uppercase leading-[0.85] text-ink mb-4 tracking-tighter">
-                The Whole<br />Picture
             </h1>
             
             <p className="font-bold text-lg font-display tracking-wider uppercase mb-2">What We Miss "Below the Belt"</p>
             
             <p className="text-lg font-body max-w-md mx-auto leading-relaxed">
                 You check your breasts. You check your cervix. <br />
-                Is your <span className="text-burnt-orange font-bold font-hand text-3xl px-1">Peach</span> part of the picture?
+               But is your <span className="text-burnt-orange font-bold font-hand text-3xl px-1">Peach</span> part of the picture?
             </p>
         </section>
     );

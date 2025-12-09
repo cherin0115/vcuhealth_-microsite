@@ -22,11 +22,8 @@ const Checklist: React.FC<ChecklistProps> = ({ symptoms, onToggle, onBookAppoint
         return hasCritical ? 'critical' : 'minor';
     }, [checkedItems, hasCheckedItems]);
 
-    // Get a specific critical symptom name for the message
-    const criticalSymptomLabel = useMemo(() => {
-        const critical = checkedItems.find(s => s.category === 'critical');
-        return critical ? critical.label : 'a red flag symptom';
-    }, [checkedItems]);
+    // Use a static label for critical symptoms to keep the message uniform and serious
+    const criticalSymptomLabel = "Feeling of fullness or pain in the area";
 
     // Reset result visibility if user unchecks everything
     useEffect(() => {
