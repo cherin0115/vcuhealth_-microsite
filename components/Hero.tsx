@@ -22,8 +22,8 @@ const Hero: React.FC = () => {
             <p className="font-bold text-lg font-display tracking-wider uppercase mb-2">What We Miss "Below the Belt"</p>
             
             <p className="text-lg font-body max-w-md mx-auto leading-relaxed">
-                You check your breasts. You check your cervix. <br />
-               But is your <span className="text-burnt-orange font-bold font-hand text-3xl px-1">Peach</span> part of the picture?
+               You check your breasts and your cervix, <br />
+               but is your <span className="text-burnt-orange font-bold font-hand text-3xl px-1">Peach</span> part of the picture?
             </p>
         </section>
     );
