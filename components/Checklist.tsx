@@ -57,7 +57,7 @@ const Checklist: React.FC<ChecklistProps> = ({ symptoms, onToggle, onBookAppoint
 
                     <div className="pl-8 relative z-10">
                         <p className="font-display text-ink/60 uppercase tracking-widest mb-6 text-sm">
-                            Mark what feels familiar:
+                            Mark Your Symptoms :
                         </p>
                         
                         <div className="space-y-4 mb-8">
