@@ -8,6 +8,13 @@ interface ChecklistProps {
     onBookAppointment: () => void;
 }
 
+const CRITICAL_PHRASES: Record<string, string> = {
+    "Feeling of fullness or pain in the area": "Feeling of fullness or pain in your rectum",
+    "Bleeding (Thought it was hemorrhoids?)": "bleeding around your rectum",
+    "Unexplained discharge or mucus": "unexplained discharge around your rectum",
+    "Lumps or bumps (Not sure if it is a skin tag?)": "lumps or bumps around your rectum"
+};
+
 const Checklist: React.FC<ChecklistProps> = ({ symptoms, onToggle, onBookAppointment }) => {
     const [showResult, setShowResult] = useState(false);
     
@@ -22,8 +29,18 @@ const Checklist: React.FC<ChecklistProps> = ({ symptoms, onToggle, onBookAppoint
         return hasCritical ? 'critical' : 'minor';
     }, [checkedItems, hasCheckedItems]);
 
-    // Use a static label for critical symptoms to keep the message uniform and serious
-    const criticalSymptomLabel = "Feeling of fullness or pain in the area";
+    // Generate dynamic critical message content
+    const criticalContent = useMemo(() => {
+        const criticalItems = checkedItems.filter(s => s.category === 'critical');
+        const phrases = criticalItems.map(s => CRITICAL_PHRASES[s.label] || s.label);
+        
+        if (phrases.length === 0) return "";
+        if (phrases.length === 1) return phrases[0];
+        if (phrases.length === 2) return `${phrases[0]} and ${phrases[1]}`;
+        
+        const last = phrases.pop();
+        return `${phrases.join(', ')}, and ${last}`;
+    }, [checkedItems]);
 
     // Reset result visibility if user unchecks everything
     useEffect(() => {
@@ -57,7 +74,7 @@ const Checklist: React.FC<ChecklistProps> = ({ symptoms, onToggle, onBookAppoint
 
                     <div className="pl-8 relative z-10">
                         <p className="font-display text-ink/60 uppercase tracking-widest mb-6 text-sm">
-                            Mark Your Symptoms :
+                            Mark what feels familiar:
                         </p>
                         
                         <div className="space-y-4 mb-8">
@@ -134,7 +151,7 @@ const Checklist: React.FC<ChecklistProps> = ({ symptoms, onToggle, onBookAppoint
                             <div className="bg-burnt-orange p-6 shadow-md border-2 border-ink relative rounded-sm text-white">
                                 <h3 className="font-display text-2xl uppercase mb-2 border-b-2 border-white/20 pb-2">Recommendation</h3>
                                 <p className="font-body text-lg mb-6 leading-snug">
-                                    Because you noted <strong>{criticalSymptomLabel}</strong>, we recommend seeing a specialist soon to rule out anything serious.
+                                    Because you noted <strong>{criticalContent}</strong>, we recommend seeing a specialist soon to rule out anything serious.
                                 </p>
                                 <button 
                                     onClick={onBookAppointment}
